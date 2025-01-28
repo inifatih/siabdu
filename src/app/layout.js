@@ -3,13 +3,12 @@ import { FontSizeProvider } from "@/context/FontSizeContext.js";
 import { Baby, Calendar, CircleHelp, Files, LayoutDashboard, MapPin, Settings, Stethoscope } from "lucide-react";
 import Header from "../components/Header.js";
 import Sidebar, { SidebarItem } from "../components/Sidebar.js";
-import './globals.css';
+import "./globals.css";
 
 export const metadata = {
-  title: 'SI ABDU',
-  description: 'Aplikasi Skrining Anak Berkebutuhan Khusus',
-}
-
+  title: "SI ABDU",
+  description: "Aplikasi Skrining Anak Berkebutuhan Khusus",
+};
 
 export default function RootLayout({ children }) {
 
@@ -27,8 +26,7 @@ export default function RootLayout({ children }) {
                   alert
                   href="/dashboard"
                 />
-                <SidebarItem icon={<Baby size={20} />} text="Skrining Tumbuh Kembang" href="/tumbuh-kembang" />
-                <SidebarItem icon={<Stethoscope size={20} />} text="Skrining Kebutuhan Khusus" href="/kebutuhan-khusus" />
+                <SidebarItem icon={<Baby size={20} />} text="Skrining Anak" href="/skrining" />
                 <SidebarItem icon={<Files size={20} />} text="Dokumen" href="/dokumen" />
                 {/* <SidebarItem icon={<MapPin size={20} />} text="Lokasi" href="/lokasi" /> */}
                 <SidebarItem icon={<Calendar size={20} />} text="Jadwal" href="/jadwal" />
@@ -53,5 +51,5 @@ export default function RootLayout({ children }) {
         </FontSizeProvider>
       </body>
     </html>
-  )
+  );
 }

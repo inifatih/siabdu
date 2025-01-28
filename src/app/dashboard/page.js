@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { TrendingUp } from "lucide-react";
 import * as React from "react";
 import { Label, Pie, PieChart } from "recharts";
@@ -31,7 +31,7 @@ const chartData = [
   { month: "April", desktop: 73, mobile: 190 },
   { month: "May", desktop: 209, mobile: 130 },
   { month: "June", desktop: 214, mobile: 140 },
-]
+];
 
 
 const chartConfig = {
@@ -86,38 +86,38 @@ export default function Dashboard (){
                   outerRadius={80}
                   strokeWidth={5}
                 >
-                <Label
-                  content={({ viewBox }) => {
-                    if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                      return (
-                        <text
-                          x={viewBox.cx}
-                          y={viewBox.cy}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                        >
-                          {/* Total Desktop */}
-                          <tspan
+                  <Label
+                    content={({ viewBox }) => {
+                      if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                        return (
+                          <text
                             x={viewBox.cx}
-                            y={viewBox.cy - 12}
-                            className="fill-foreground text-2xl font-bold"
+                            y={viewBox.cy}
+                            textAnchor="middle"
+                            dominantBaseline="middle"
                           >
-                            Desktop: {totalDesktop.toLocaleString()}
-                          </tspan>
+                            {/* Total Desktop */}
+                            <tspan
+                              x={viewBox.cx}
+                              y={viewBox.cy - 12}
+                              className="fill-foreground text-2xl font-bold"
+                            >
+                              Desktop: {totalDesktop.toLocaleString()}
+                            </tspan>
 
-                          {/* Total Mobile */}
-                          <tspan
-                            x={viewBox.cx}
-                            y={viewBox.cy + 12}
-                            className="fill-foreground text-2xl font-bold"
-                          >
-                            Mobile: {totalMobile.toLocaleString()}
-                          </tspan>
-                        </text>
-                      );
-                    }
-                  }}
-                />
+                            {/* Total Mobile */}
+                            <tspan
+                              x={viewBox.cx}
+                              y={viewBox.cy + 12}
+                              className="fill-foreground text-2xl font-bold"
+                            >
+                              Mobile: {totalMobile.toLocaleString()}
+                            </tspan>
+                          </text>
+                        );
+                      }
+                    }}
+                  />
                 </Pie>
               </PieChart>
               
@@ -152,6 +152,6 @@ export default function Dashboard (){
         </ChartContainer>
       </div>
     </>
-  )
+  );
 }
 

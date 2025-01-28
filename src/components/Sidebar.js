@@ -1,29 +1,29 @@
-"use client"
-import { ChevronFirst, ChevronLast, MoreVertical } from "lucide-react"
-import Link from "next/link"
-import { createContext, useContext, useEffect, useState } from "react"
+"use client";
+import { ChevronFirst, ChevronLast, MoreVertical } from "lucide-react";
+import Link from "next/link";
+import { createContext, useContext, useEffect, useState } from "react";
 
 
-const SidebarContext = createContext()
+const SidebarContext = createContext();
 
 export default function Sidebar({ children }) {
-  const [expanded, setExpanded] = useState(true)
+  const [expanded, setExpanded] = useState(true);
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 820) {
-        setExpanded(false)
+      if (window.innerWidth < 1080) {
+        setExpanded(false);
       } else {
-        setExpanded(true)
+        setExpanded(true);
       }
-    }
+    };
 
-    window.addEventListener("resize", handleResize)
+    window.addEventListener("resize", handleResize);
 
-    handleResize()
+    handleResize();
 
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   
   return (
     <aside className="h-screen">
@@ -71,12 +71,12 @@ export default function Sidebar({ children }) {
         </div>
       </nav>
     </aside>
-  )
+  );
 }
 
 export function SidebarItem({ icon, text, alert, defaultActive, href }) {
   const [active, setActive] = useState(defaultActive || false);
-  const { expanded } = useContext(SidebarContext)
+  const { expanded } = useContext(SidebarContext);
 
   const handleClick = () => {
     setActive(true);
@@ -98,10 +98,10 @@ export function SidebarItem({ icon, text, alert, defaultActive, href }) {
           font-medium rounded-md cursor-pointer
           transition-colors group
           ${
-            active
-              ? "bg-gradient-to-tr from-indigo-200 to-indigo-100 text-indigo-800"
-              : "hover:bg-indigo-50 text-black-600"
-          }
+    active
+      ? "bg-gradient-to-tr from-indigo-200 to-indigo-100 text-indigo-800"
+      : "hover:bg-indigo-50 text-black-600"
+    }
         `}
         onClick={handleClick} // Ganti dengan handleClick
       >
