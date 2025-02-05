@@ -7,7 +7,7 @@ import {
   
 
 
-export default function Pengaturan() {
+export default function Bantuan() {
     return (
         <div>
             <h1 className="font-semibold mb-2">Cara Penggunaan</h1>

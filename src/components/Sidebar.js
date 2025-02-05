@@ -1,5 +1,6 @@
 "use client";
 import { ChevronFirst, ChevronLast, MoreVertical } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { createContext, useContext, useEffect, useState } from "react";
 
@@ -29,16 +30,18 @@ export default function Sidebar({ children }) {
     <aside className="h-screen">
       <nav className="h-full flex flex-col bg-white border-r shadow-sm">
         <div className="p-4 flex justify-between items-center">
-          <img
-            src="https://img.logoipsum.com/243.svg"
+          <Image
+            src="/LOGO_UPTD_LD.png"
             className={`overflow-hidden transition-all ${
               expanded ? "w-32" : "w-0"
             }`}
-            alt=""
+            width={240} // Tentukan width
+            height={240} // Tentukan height
+            alt="Logo SI ABDU"
           />
           <button
             onClick={() => setExpanded((curr) => !curr)}
-            className="p-1.5 rounded-lg bg-gray-50 hover:bg-gray-100"
+            className="p-1.5 rounded-lg bg-gray-100 hover:bg-indigo-100"
           >
             {expanded ? <ChevronFirst /> : <ChevronLast />}
           </button>
@@ -49,15 +52,10 @@ export default function Sidebar({ children }) {
         </SidebarContext.Provider>
 
         <div className="border-t flex p-3">
-          <img
-            src="https://ui-avatars.com/api/?background=c7d2fe&color=3730a3&bold=true"
-            alt=""
-            className="w-10 h-10 rounded-md"
-          />
           <div
             className={`
               flex justify-between items-center
-              overflow-hidden transition-all ${expanded ? "w-52 ml-3" : "w-0"}
+              overflow-hidden transition-all ${expanded ? "w-48" : "w-0"}
           `}
           >
             <div className="leading-4">
@@ -98,16 +96,16 @@ export function SidebarItem({ icon, text, alert, defaultActive, href }) {
           font-medium rounded-md cursor-pointer
           transition-colors group
           ${
-    active
-      ? "bg-gradient-to-tr from-indigo-200 to-indigo-100 text-indigo-800"
-      : "hover:bg-indigo-50 text-black-600"
-    }
+            active
+              ? "bg-tr-to-tr text-indigo-600"
+              : "hover:bg-indigo-50 text-black-600"
+            }
         `}
         onClick={handleClick} // Ganti dengan handleClick
       >
         {icon}
         <span 
-          className={`overflow-hidden transition-all h-7 ${expanded ? "w-52 ml-3" : "w-0"
+          className={`overflow-hidden transition-all h-7 ${expanded ? "w-auto ml-3" : "w-0"
           }`}
         >
           {text}

@@ -1,7 +1,9 @@
 "use server";
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 export const getSkrining = async (data) => {
+  console.log("tereksekusi")
+
     const supabase = await createClient();
 
     // table identitas anak
@@ -9,13 +11,18 @@ export const getSkrining = async (data) => {
     .from("identitasAnak")
     .insert([{
       namaAnak: data.namaAnak, 
-      namaOrtu: data.namaOrtu,
-      nomorTelepon: data.nomorTelepon,
-      tanggalSkrining: data.tanggalSkrining, 
+      namaOrangtua: data.namaOrangtua,
+      jenisKelamin: data.jenisKelamin, 
       usia: data.usia,
+      nomorTelepon: data.nomorTelepon,
+      tanggalSkrining: data.tanggalSkrining,
       lokasi: data.lokasi,
       ketLokasi: data.ketLokasi
-    }]);
+    }])
+    .select();
+
+
+    const identitasAnakId = identitasAnak.id;
 
     if (identitasAnakError) {
       console.error("Error inserting into identitasAnak:", identitasAnakError);
@@ -32,13 +39,13 @@ export const getSkrining = async (data) => {
       q4: data.q4,
       q5: data.q5,
       q6: data.q6,
-      identitasAnakId: identitasAnak.id
+      identitasAnak_id: identitasAnakId
     }]);
 
     if (tumbuhKembangError) {
       console.error("Error inserting into tumbuhKembang:", tumbuhKembangError);
       return { success: false, message: "Gagal menyimpan data tumbuh kembang anak." };
     }
-  
+
     return { success: true, message: "Data Anak Berhasil Disimpan!" }; // Return success message
   }
