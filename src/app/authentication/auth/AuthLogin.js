@@ -1,23 +1,24 @@
 "use client"
 
+import { getUser } from "@/app/authentication/login/action";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { redirect } from "next/dist/server/api-utils";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
+import { toast } from "react-toastify";
 import { z } from "zod";
-
 const loginSchema = z.object({
   email: z.string().email("Email tidak valid"),
-  passwrod: z.string().min(6, "Password minimal 6 karakter")
+  password: z.string().min(6, "Password minimal 6 karakter")
 });
 
-export default function LoginPage({ login }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  
+export default function LoginPage() {  
   const methods = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -29,13 +30,16 @@ export default function LoginPage({ login }) {
     }
   });
 
+  const router = useRouter(); // Inisialisasi useRouter untuk navigasi
+
   const onSubmit = async () => {
     const data = methods.getValues();
-    const response = await login(data); // Panggil function login dari action.js
+    const response = await getUser(data); // Panggil function login dari action.js
 
     if (response.success) {
       toast.success(response.message); // Show success toast
       methods.reset();
+      router.push("/");
     } else {
       toast.error(response.message); // Show error toast
     }
@@ -43,56 +47,77 @@ export default function LoginPage({ login }) {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-gray-100">
-      <Card className="w-full max-w-md p-6">
-        <CardContent>
-          <h2 className="text-2xl font-semibold text-center mb-4">Login</h2>
+    <Card className="w-full max-w-md p-6">
+      <CardContent>
+        <h2 className="text-2xl font-semibold text-center mb-4">Login</h2>
 
-          {/* Barisan logo */}
-          <div className="flex p-2 items-center justify-center">
-            {/* Logo UPTD */}
-            <Image
-              src="/LOGO_UPTD_LD.png"
-              width={40} // Tentukan width
-              height={40} // Tentukan height
-              alt="Logo UPTD LD Sidoarjo"
-            />
-            {/* Logo Kabupaten Sidoarjo */}
-            <Image
-              src="/KAB_SIDOARJO.png"
-              width={40} // Tentukan width
-              height={40} // Tentukan height
-              alt="Logo Kabupaten Sidoarjo"
-            />
-          </div>
-          <FormProvider {...methods}>
-            <form onSubmit={methods.handleSubmit(onSubmit)}>
+        {/* Barisan logo */}
+        <div className="flex p-2 items-center justify-center">
+          {/* Logo UPTD */}
+          <Image
+            src="/LOGO_UPTD_LD.png"
+            width={40} // Tentukan width
+            height={40} // Tentukan height
+            alt="Logo UPTD LD Sidoarjo"
+          />
+          {/* Logo Kabupaten Sidoarjo */}
+          <Image
+            src="/KAB_SIDOARJO.png"
+            width={40} // Tentukan width
+            height={40} // Tentukan height
+            alt="Logo Kabupaten Sidoarjo"
+          />
+        </div>
+        <FormProvider {...methods}>
+          <form onSubmit={methods.handleSubmit(onSubmit)}>
+            <div className="py-2">
               {/* Input Email */}
-              <Input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="mb-3"
+              <FormField
+                name="email"
+                control={methods.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email:</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="Email"
+                        required
+                        {...field}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
               />
+            </div>  
               {/* Input Password */}
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="mb-3"
+            <div className="py-2">
+              <FormField
+                name="password"
+                control={methods.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password:</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Password"
+                        required
+                        {...field}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
               />
-              {/* Tombol Submit */}
-              <Button type="submit" className="w-full" disabled={methods.formState.isSubmitting}>
-                {methods.formState.isSubmitting ? "Logging in..." : "Login"}
-              </Button>
-            </form>
-          </FormProvider>
-        </CardContent>
-      </Card>
-    </div>
+            </div>
+            
+            {/* Tombol Submit */}
+            <Button type="submit" className="w-full my-4">
+              Login
+            </Button>
+          </form>
+        </FormProvider>
+      </CardContent>
+    </Card>
   );
 }

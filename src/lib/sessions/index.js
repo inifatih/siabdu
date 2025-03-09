@@ -11,7 +11,7 @@ export async function getLoggedInUser() {
       error,
     } = await supabase.auth.getUser();
 
-    console.log("user loggin ",user);
+    console.log("user login ",user);
   
     if (error) {
       console.error("Error fetching user:", error.message);

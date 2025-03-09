@@ -1,73 +1,127 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
 
-// Fetch data skrining
-export const fetchSkriningData = async (pageIndex = 0, pageSize = 10) => {
+export const fetchSkriningData = async ({
+  pageIndex = 0,
+  pageSize = 10,
+  filter = "all",      // "all", "name", "lokasi", "tanggal"
+  searchValue = "",    // untuk filter nama atau lokasi
+  startDate = null,    // untuk filter tanggal (rentang: dari tanggal)
+  endDate = null,       // untuk filter tanggal (rentang: sampai tanggal)
+  lokasiFilter = "all"
+} = {}) => {
   const supabase = await createClient();
 
-  // Hitung batas range untuk pagination
+  // Hitung batas range untuk lazy loading
   const start = pageIndex * pageSize;
   const end = start + pageSize - 1;
 
-  // Mendapatkan data dari tabel identitasAnak
-  const { data: identitasAnak, error: identitasAnakError } = await supabase
+  // Buat query dasar dan sertakan opsi count untuk mendapatkan total data sesuai filter
+  let query = supabase
     .from("identitasAnak")
-    .select(id, namaAnak, namaOrangtua, nomorTelepon, tanggalSkrining, usia, lokasi, ketLokasi)
-    .order("created_at", {ascending: false})
-    .range(start, end);
+    .select(
+      `id, namaAnak, namaOrangtua, nomorTelepon, jenisKelamin, tanggalSkrining, usia, lokasi, ketLokasi, tumbuhKembang(Hasil, ketTumbuhKembang)`,
+      { count: "exact" }
+    )
+    .order("created_at", { ascending: false });
 
-  if (identitasAnakError) {
-    console.error("Error fetching identitasAnak:", identitasAnakError);
-    return { success: false, data: null, message: "Gagal mendapatkan data identitas anak." };
+  // Terapkan kondisi filtering berdasarkan tipe filter
+  if (searchValue) {
+    query = query.or(`namaAnak.ilike.%${searchValue}%,lokasi.ilike.%${searchValue}%`);
+  }
+  
+  // (TANGGAL SKRINING) Jika filter "tanggalSkrining", tidak ada tambahan kondisi
+  if (startDate && endDate) {
+    query = query
+      .gte("tanggalSkrining", startDate)  // mulai dari startDate
+      .lte("tanggalSkrining", endDate);   // sampai dengan endDate
   }
 
-  // Hitung total jumlah data untuk pagination
-  const { count, error: countError } = await supabase
-    .from("identitasAnak")
-    .select("*", { count: "exact", head: true });
-
-  if (countError) {
-    console.error("Error fetching total count:", countError);
-    return { success: false, data: null, message: "Gagal mendapatkan jumlah data." };
+  // (LOKASI) Jika filter "all", tidak ada tambahan kondisi
+  if (lokasiFilter && lokasiFilter !== "all") {
+    query = query.eq("lokasi", lokasiFilter);
   }
 
-  return { success: true, data: identitasAnak, totalCount: count, message: "Data berhasil diambil." };
+  // Terapkan lazy loading
+  query = query.range(start, end);
+
+  // Eksekusi query
+  try {
+    const { data, error, count } = await query;
+
+    if (error) {
+      console.error("Error fetching skrining data:", error);
+      return { success: false, data: null, message: "Gagal mendapatkan data skrining." };
+    }
+
+    return { success: true, data, totalCount: count };
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    return { success: false, data: null, message: "Terjadi kesalahan yang tidak terduga." };
+  }
 };
 
-// Mencari berdasarkan nama
-export const getSkriningbyName = async (searchQuery, start, end) => {
+export const fetchTumbuhKembang = async () => {
   const supabase = await createClient();
 
-  const { data: identitasAnak, error: identitasAnakError } = await supabase
-    .from("identitasAnak")
-    .select(`id, namaAnak, namaOrangtua, nomorTelepon, tanggalSkrining, usia, lokasi, ketLokasi`)
-    .order("created_at", {ascending: false})
-    .range(start, end)
-    .ilike("namaAnak", `%${searchQuery}%`); // Apply filter for child name
+  try {
+    const { data, error } = await supabase
+      .from("tumbuhKembang")
+      .select("created_at, Hasil");
 
-  if (identitasAnakError) {
-    console.error("Error fetching identitasAnak:", identitasAnakError);
-    return { success: false, data: null, message: "Gagal mendapatkan data identitas anak." };
+    if (error) {
+      console.error("Error fetching tumbuh kembang data:", error);
+      return { success: false, data: null, message: "Gagal mendapatkan data tumbuh kembang." };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    return { success: false, data: null, message: "Terjadi kesalahan yang tidak terduga." };
   }
+};
 
-  return { success: true, data: identitasAnak };
-}
-
-// Mencari berdasarkan lokasi
-export const getSkriningbyLokasi = async (lokasiQuery, start, end) => {
+export const deleteData = async (id) => {
   const supabase = await createClient();
 
-  const { data: identitasAnak, error: identitasAnakError } = await supabase
-    .from("identitasAnak")
-    .select(`id, namaAnak, namaOrangtua, nomorTelepon, tanggalSkrining, usia, lokasi, ketLokasi`)
-    .order("created_at", {ascending: false})
-    .range(start, end)
-    .ilike("lokasi", `%${lokasiQuery}%`); // Apply filter for lokasi
+  try {
+    const { error } = await supabase
+      .from("identitasAnak")
+      .delete()
+      .eq("id", id);
 
-  if (identitasAnakError) {
-    console.error("Error fetching identitasAnak:", identitasAnakError);
-    return { success: false, data: null, message: "Gagal mendapatkan data berdasarkan lokasi." };
+    if (error) {
+      console.error("Error deleting data:", error);
+      return { success: false, message: "Gagal menghapus data." };
+    }
+
+    return { success: true, message: "Data berhasil dihapus." };
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    return { success: false, message: "Terjadi kesalahan yang tidak terduga." };
   }
+};
 
-  return { success: true, data: identitasAnak };
-}
+
+export const fetchNamaAnakById = async (id) => {
+  const supabase = await createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from("identitasAnak")
+      .select("namaAnak")
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      console.error("Error fetching namaAnak:", error);
+      return null; // Jika error, kembalikan null
+    }
+
+    return data?.namaAnak || null;
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    return null;
+  }
+};
+

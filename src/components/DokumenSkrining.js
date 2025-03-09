@@ -54,7 +54,6 @@ import {
   SelectValue
 } from "@/components/ui/select";
 
-import { getSkriningbyLokasi, getSkriningbyName } from "@/app/(DashboardLayout)/dokumen/action";
 import {
   Table,
   TableBody,
@@ -63,10 +62,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { SelectLabel } from "@radix-ui/react-select";
+
+import { deleteData } from "@/app/(DashboardLayout)/dokumen/action";
+import { useRouter } from 'next/navigation';
+
 
 export default function DokumenSkrining({ fetchSkriningData }) {
-  
+
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [data, setData] = useState([]);
@@ -75,25 +78,30 @@ export default function DokumenSkrining({ fetchSkriningData }) {
   // Filters
   const [globalFilter, setGlobalFilter] = useState("");
   const [lokasiFilter, setLokasiFilter] = useState("all"); // State to hold selected lokasi filter
-  const [columnFilters, setColumnFilters] = useState([]);
+  const [startDate, setStartDate] = useState(null); // State to hold start date filter
+  const [endDate, setEndDate] = useState(null); // State to hold end date filter
 
   // Pagination
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(5); // Set jumlah data per halaman
-  const totalPages = Math.ceil(totalCount / pageSize);
+  const pageCount = Math.ceil(totalCount / pageSize);
 
-  const [start, setStart] = useState(0); // Pagination start
-  const [end, setEnd] = useState(10); // Pagination end
-
-  const [results, setResults] = useState([]); // To store search results
-
+  // Ambil data setiap kali pageIndex, pageSize atau filter berubah
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const response = await fetchSkriningData(pageIndex, pageSize);
+      const response = await fetchSkriningData({
+        pageIndex,
+        pageSize,
+        searchValue: globalFilter, 
+        lokasiFilter: lokasiFilter !== "all" ? lokasiFilter : "",
+        startDate: startDate || null,
+        endDate: endDate || null,
+      });
+  
       if (response.success) {
         setData(response.data);
-        setTotalCount(response.totalCount); // Update total data
+        setTotalCount(response.totalCount);
       } else {
         console.error(response.message);
       }
@@ -101,58 +109,67 @@ export default function DokumenSkrining({ fetchSkriningData }) {
     };
   
     fetchData();
-  }, [pageIndex, pageSize]);
+  }, [pageIndex, pageSize, globalFilter, lokasiFilter, startDate, endDate]); // Pastikan globalFilter masuk dalam dependency
+  
 
-  // Search by Name
-  const handleSearch = async () => {
-    const response = await getSkriningbyName(globalFilter, start, end);
-    if (response.success) {
-      setResults(response.data);
-    } else {
-      console.error(response.message);
-    }
-  }
+  // Ubah nilai filter dan reset ke halaman pertama
   const handleSearchChange = (e) => {
     setGlobalFilter(e.target.value);
-    handleSearch();
+    setPageIndex(0);
   };
 
-  // Filter by Lokasi
-  const handleFilterChange = async (value) => {
-    setLokasiFilter(value); // Update lokasi filter state
-
-    // Fetch data based on the selected location filter
-    const response = await getSkriningbyLokasi(value, start, end);
-
-    if (response.success) {
-      setResults(response.data); // Set the filtered results
-    } else {
-      console.error(response.message); // Handle error case
-    }
-
-    // Apply the filter to the table
-    table.setColumnFilters((prev) => [
-      ...prev.filter((f) => f.id !== "lokasi"), // Remove previous lokasi filter if any
-      ...(value === "all" ? [] : [{ id: "lokasi", value }]), // Add new filter if not "all"
-    ]);
+  // Ubah nilai filter lokasi dan reset ke halaman pertama
+  const handleLokasiChange = (value) => {
+    setLokasiFilter(value);
+    setPageIndex(0);
   };
 
-  const pageCount = Math.ceil(totalCount / pageSize);
+  const handleStartDateChange = (e) => {
+    setStartDate(e.target.value);
+    setPageIndex(0);
+  };
+
+  const handleEndDateChange = (e) => {
+    setEndDate(e.target.value);
+    setPageIndex(0);
+  };
+  
+  // Ubah halaman dan jumlah data per halaman
   const handlePageChange = (newPage) => {
     if (newPage >= 0 && newPage < pageCount) {
       setPageIndex(newPage);
     }
   };
+
   const handlePageSizeChange = (value) => {
     const newPageSize = Number(value);
-    setPageSize(newPageSize);  // Set page size baru
-    table.setPageSize(newPageSize); // Menyesuaikan jumlah data per halaman pada tabel
+    setPageSize(newPageSize);
+    setPageIndex(0);
+    table.setPageSize(newPageSize);
   };
 
-  // Bersihkan Filter
+  const handleDeleteData = async (id) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus data ini?")) return;
+  
+    const response = await deleteData(id);
+  
+    if (response.success) {
+      alert(response.message);
+      // Perbarui state atau fetch ulang data tabel setelah penghapusan
+      window.location.reload(); // Bisa diganti dengan metode fetch ulang data
+    } else {
+      alert(response.message);
+    }
+  };
+
+  // Bersihkan semua filter
   const clearFilters = () => {
-    setColumnFilters([]);
-  }
+    setGlobalFilter("");
+    setLokasiFilter("all");
+    setStartDate("");
+    setEndDate("");
+    setPageIndex(0);
+  };
 
   const columns = [
     { 
@@ -170,15 +187,33 @@ export default function DokumenSkrining({ fetchSkriningData }) {
     { 
       accessorKey: "jenisKelamin", 
       header: "Jenis Kelamin",
-      cell: ({ row }) => row.original.jenisKelamin ? "Laki-laki" : "Perempuan"
+      cell: ({ row }) => row.getValue("jenisKelamin") ? "Laki-laki" : "Perempuan"
     },
     { accessorKey: "nomorTelepon", header: "No. Telepon" },
     { accessorKey: "tanggalSkrining", header: "Tanggal Skrining" },
     { accessorKey: "lokasi", header: "Lokasi" },
-    { accessorKey: "ketLokasi", header: "Keterangan Lokasi" },
+    { accessorKey: "ketLokasi", header: "Ket. Lokasi" },
+    { 
+      accessorKey: "tumbuhKembang", 
+      header: "Hasil",
+      cell: ({ row }) => {
+        const hasil = row.getValue("tumbuhKembang");
+        // Cek apakah tumbuhKembang memiliki data dan ambil nilai Hasil dari objek pertama dalam array
+        return hasil && hasil.length > 0 ? (hasil[0]?.Hasil ? "Tidak Terindikasi" : "Terindikasi") : "";
+      }
+    },
+    {
+      accessorKey: "ketTumbuhKembang",
+      header: "Ket. Tumbuh Kembang",
+      cell: ({ row }) => {
+        const hasil = row.getValue("tumbuhKembang");
+        // Cek apakah tumbuhKembang memiliki data dan ambil nilai ketTumbuhKembang dari objek pertama dalam array
+        return hasil && hasil.length > 0 ? hasil[0]?.ketTumbuhKembang : "";
+      }
+    },
     {
       id: "actions",
-      header: "Actions",
+      header: "Aksi",
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -188,10 +223,17 @@ export default function DokumenSkrining({ fetchSkriningData }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuLabel>Aksi</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Edit</DropdownMenuItem>
-            <DropdownMenuItem>Delete</DropdownMenuItem>
+            <DropdownMenuItem className="flex">
+            <Button
+              className="bg-indigo-600 hover:bg-slate-600"
+              onClick={() => router.push(`/skrining/${row.original.id}`)}
+            >
+              Ubah
+            </Button>
+            <Button className="bg-red-600 hover:bg-slate-600" onClick={() => handleDeleteData(row.original.id)}>Hapus</Button>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       ),
@@ -206,33 +248,19 @@ export default function DokumenSkrining({ fetchSkriningData }) {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onGlobalFilterChange: setGlobalFilter,
-    // Filter dokumen
-    onColumnFiltersChange: (updater) => {
-      setColumnFilters((prevFilters) => {
-        const newFilters = typeof updater === "function" ? updater(prevFilters) : updater;
-        const lokasiFilter = newFilters.find(f => f.id === "lokasi")?.value || "all";
-        setLokasiFilter(lokasiFilter);
-        return newFilters;
-      });
-    },
     state: {
       globalFilter,
-      columnFilters,
     },
-
-    // Data per halaman
-    initialState: { pageSize, pageIndex },
-    // Pagination
-    manualPagination: true, // Aktifkan pagination manual
-    pageCount: -1, // -1 untuk pagination dinamis
+    manualPagination: true, // Pagination di-*handle* secara manual
+    pageCount: -1, // -1 karena jumlah halaman diambil secara dinamis berdasarkan totalCount
   });
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  // if (loading) {
+  //   return <div>Loading...</div>
+  // }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <div>Error: {error}</div>
   }
 
   return (
@@ -249,12 +277,11 @@ export default function DokumenSkrining({ fetchSkriningData }) {
           />
         </div>
 
-        {/* Dropdown Filter */}
+        {/* Filter lainnya */}
         <div className="flex items-center pb-2">
-
           {/* Lokasi */}
           <Select
-            onValueChange={handleFilterChange} // Apply the filter on value change
+            onValueChange={handleLokasiChange} // Apply the filter on value change
             value={lokasiFilter}
           >
             <SelectTrigger className="w-1/8">
@@ -262,14 +289,57 @@ export default function DokumenSkrining({ fetchSkriningData }) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Semua Desa</SelectItem>
-              <SelectItem value="Desa AA">Desa AA</SelectItem>
-              <SelectItem value="Desa AB">Desa AB</SelectItem>
-              <SelectItem value="Desa BA">Desa BA</SelectItem>
-              <SelectItem value="Desa BB">Desa BB</SelectItem>
-              <SelectItem value="Desa CA">Desa CA</SelectItem>
-              <SelectItem value="Desa CB">Desa CB</SelectItem>
+              <SelectItem value="Buduran">BUDURAN</SelectItem>
+              <SelectItem value="Medaeng">MEDAENG</SelectItem>
+              <SelectItem value="Sekardangan">SEKARDANGAN</SelectItem>
+              <SelectItem value="Gedangan">GEDANGAN</SelectItem>
+              <SelectItem value="Ganting">GANTING</SelectItem>
+              <SelectItem value="Tanggulangin">TANGGULANGIN</SelectItem>
+              <SelectItem value="Candi">CANDI</SelectItem>
+              <SelectItem value="Sidodadi">SIDODADI</SelectItem>
+              <SelectItem value="Sidoarjo">SIDOARJO</SelectItem>
+              <SelectItem value="Urangagung">URANGAGUNG 1</SelectItem>
+              <SelectItem value="Urangagung">URANGAGUNG 2</SelectItem>
+              <SelectItem value="Tarik 1">TARIK 1</SelectItem>
+              <SelectItem value="Tarik 2">TARIK 2</SelectItem>
+              <SelectItem value="Sedati">SEDATI</SelectItem>
+              <SelectItem value="Tambakrejo">TAMBAKREJO</SelectItem>
+              <SelectItem value="Waru">WARU</SelectItem>
+              <SelectItem value="Balongbendo">BALONGBENDO</SelectItem>
+              <SelectItem value="Trosobo">TROSOBO</SelectItem>
+              <SelectItem value="Wonokasian">WONOKASIAN</SelectItem>
+              <SelectItem value="Wonoayu">WONOAYU</SelectItem>
+              <SelectItem value="Tulangan">TULANGAN</SelectItem>
+              <SelectItem value="Kepadangan">KEPADANGAN</SelectItem>
+              <SelectItem value="Prambon">PRAMBON</SelectItem>
+              <SelectItem value="Krembung">KREMBUNG</SelectItem>
+              <SelectItem value="Krian">KRIAN</SelectItem>
+              <SelectItem value="Barengkrajan">BARENGKRAJAN</SelectItem>
+              <SelectItem value="Jabon">JABON</SelectItem>
+              <SelectItem value="Poron">PORON</SelectItem>
+              <SelectItem value="Kedungsolo">KEDUNGSOLO</SelectItem>
+              <SelectItem value="Sukodono">SUKODONO</SelectItem>
+              <SelectItem value="Taman">TAMAN</SelectItem>
             </SelectContent>
           </Select>
+          
+          {/* Filter Tanggal */}
+          <div className="flex items-center ml-2">
+            <Input
+              type="date"
+              value={startDate}
+              onChange={handleStartDateChange}
+              className="w-fit"
+              placeholder="Tanggal mulai"
+            />
+            <Input
+              type="date"
+              value={endDate}
+              onChange={handleEndDateChange}
+              className="w-fit ml-2"
+              placeholder="Tanggal akhir"
+            />
+          </div>
 
           {/* Jumlah data per halaman */}
           <Select onValueChange={handlePageSizeChange} value={String(pageSize)}>
@@ -303,6 +373,7 @@ export default function DokumenSkrining({ fetchSkriningData }) {
               <SelectItem value="Hambatan Sensori">Hambatan Sensori</SelectItem>
             </SelectContent>
           </Select> */}
+
           {/* Tombol Clear Filter */}
           <Button
             onClick={clearFilters}
@@ -313,25 +384,19 @@ export default function DokumenSkrining({ fetchSkriningData }) {
           </Button>
         </div>
       </div>
-      
-      
-
-      {loading ? <p>Loading...</p> : null}
-
+  
       {/* Table Data Anak */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow 
-                key={headerGroup.id}
-              >
+              <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead 
-                    key={header.id} 
-                    className="text-gray-900 bg-gray-200"
-                  >
-                    {flexRender(header.column.columnDef.header, header.getContext())}
+                  <TableHead key={header.id} className="text-gray-900 bg-gray-200">
+                    {flexRender(
+                      header.column.columnDef.header, 
+                      header.getContext()
+                    )}
                   </TableHead>
                 ))}
               </TableRow>

@@ -1,91 +1,141 @@
 "use client";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import React, { useState } from "react";
-import { useFormContext } from "react-hook-form";
+import { fetchSkriningData } from "@/app/(DashboardLayout)/dokumen/action";
+import { fetchHambatan } from "@/app/(DashboardLayout)/kebutuhanKhusus/action";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+export default function ListAnakSkrining() {
+  const [anakData, setAnakData] = useState([]);
+  const [hambatanData, setHambatanData] = useState();
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from "@/components/ui/radio-group";
-
-const FormKebutuhanKhusus = ({ pertanyaan }) => {
-  const { register, formState: { errors } } = useFormContext(); // Mengakses context dari form induk
-  const [activeTab, setActiveTab] = useState("penglihatan");
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      try {
+        // Ambil data skrining anak
+        const responseSkrining = await fetchSkriningData();
+        // Ambil data hambatan
+        const responseHambatan = await fetchHambatan();
+  
+        if (responseSkrining.success && Array.isArray(responseSkrining.data)) {
+          // Filter hanya anak dengan hasil tumbuh kembang = false
+          const filteredData = responseSkrining.data.filter(
+            (item) => item.tumbuhKembang?.length > 0 && item.tumbuhKembang[0].Hasil === false
+          );
+  
+          if (responseHambatan.success && Array.isArray(responseHambatan.data)) {
+            // Gabungkan data skrining dengan data hambatan berdasarkan identitasAnak_id
+            const mergedData = filteredData.map((anak) => {
+              const hambatanAnak = responseHambatan.data.filter(
+                (h) => h.identitasAnak_id === anak.id
+              );
+  
+              return {
+                ...anak,
+                hambatan: hambatanAnak.map((h) => h.jenis_hambatan), // Simpan jenis hambatan dalam array
+                maxHambatanReached: hambatanAnak.length >= 2, // True jika sudah 2 hambatan
+              };
+            });
+  
+            setAnakData(mergedData);
+          } else {
+            setAnakData(filteredData);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+      setLoading(false);
+    }
+    fetchData();
+  }, []);  
 
   return (
-    <div className="py-4">
-      <Tabs 
-        defaultValue="penglihatan" 
-        value={activeTab} 
-        onValueChange={setActiveTab} 
-        className="w-full max-w-lg"
-      >
-        {/* Daftar Tab */}
-        <TabsList>
-          {Object.keys(pertanyaan).map((key) => (
-            <TabsTrigger key={key} value={key}>
-              {key.charAt(0).toUpperCase() + key.slice(1)}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+    <Card>
+      <CardHeader>
+        <CardTitle>Daftar Anak dengan Indikasi Gangguan Tumbuh Kembang</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <p className="text-center text-gray-600">Loading...</p>
+        ) : anakData.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nama Anak</TableHead>
+                <TableHead>Usia</TableHead>
+                <TableHead>Jenis Kelamin</TableHead>
+                <TableHead>Tanggal Skrining</TableHead>
+                <TableHead>Perkiraan Lanjutan</TableHead>
+                <TableHead>Jenis Hambatan</TableHead>
+                <TableHead>Aksi</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {anakData.map((anak) => {
+                // Konversi tanggal skrining dan hitung tanggal lanjutan (1 bulan setelah)
+                const skriningDate = new Date(anak.tanggalSkrining);
+                const lanjutanDate = new Date(skriningDate);
+                lanjutanDate.setMonth(lanjutanDate.getMonth() + 1);
 
-        {/* Konten Tab */}
-        <div className="py-4">
-          <TabsContent value={activeTab}>
-            {pertanyaan[activeTab] && pertanyaan[activeTab].length > 0 ? (
-              pertanyaan[activeTab].map((item) => (
-                <FormField
-                  key={item.id}
-                  name={`question-${item.id}`}
-                  render={() => (
-                    <FormItem>
-                      <FormLabel className="font-semibold text-sm text-gray-600">
-                        {item.question}
-                      </FormLabel>
-                      <FormControl>
-                        <RadioGroup className="flex space-x-4 mt-2">
-                          {item.options.map((option) => (
-                            <div key={`${item.id}-${option}`} className="flex items-center">
-                              <RadioGroupItem
-                                {...register(`question-${item.id}`, { required: true })}
-                                value={option}
-                                id={`option-${item.id}-${option}`}
-                              />
-                              <FormLabel
-                                htmlFor={`option-${item.id}-${option}`}
-                                className="text-gray-600"
-                              >
-                                {option}
-                              </FormLabel>
-                            </div>
-                          ))}
-                        </RadioGroup>
-                      </FormControl>
-                      {errors[`question-${item.id}`] && (
-                        <FormMessage className="text-red-500">
-                          {errors[`question-${item.id}`]?.message || "This question is required"}
-                        </FormMessage>
-                      )}
-                    </FormItem>
-                  )}
-                />
-              ))
-            ) : (
-              <p className="text-gray-600">Data tidak tersedia untuk tab ini.</p>
-            )}
-          </TabsContent>
-        </div>
-      </Tabs>
-    </div>
+                // Hitung selisih waktu dalam milidetik
+                const now = new Date();
+                const diffInMs = lanjutanDate - now;
+                const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+
+                // Tentukan warna teks: merah jika kurang dari 7 hari, hijau jika lebih dari 7 hari
+                const textColor = diffInDays < 7 ? "text-red-500" : "text-green-500";
+
+                return (
+                  <TableRow key={anak.id}>
+                    <TableCell>{anak.namaAnak}</TableCell>
+                    <TableCell>{anak.usia} bulan</TableCell>
+                    <TableCell>{anak.jenisKelamin ? "Laki-laki" : "Perempuan"}</TableCell>
+                    <TableCell>{format(anak.tanggalSkrining, "PPP", {locale:id})}</TableCell>
+                    <TableCell className={textColor}>
+                      {format(lanjutanDate, "PPP", {locale:id})}
+                    </TableCell>
+                    <TableCell>
+                    {anak.hambatan.length > 0 ? (
+                      <ul>
+                        {anak.hambatan.map((hambatan, index) => (
+                          <li className="capitalize" key={index}>{hambatan}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <span className="text-gray-500">Tidak ada hambatan</span>
+                    )}
+                    {anak.maxHambatanReached && (
+                      <p className="text-red-500 font-semibold mt-1">Maksimal 2 hambatan tercapai</p>
+                    )}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        onClick={() => router.push(`/kebutuhanKhusus/${anak.id}`)}
+                        disabled={anak.maxHambatanReached} // Disabled jika sudah 2 hambatan
+                      >
+                        Pilih Hambatan
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        ) : (
+          <p className="text-center text-gray-600">
+            Tidak ada data anak dengan indikasi gangguan tumbuh kembang.
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
-};
-
-export default FormKebutuhanKhusus;
+}

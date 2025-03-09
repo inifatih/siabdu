@@ -1,10 +1,8 @@
-import { createServerClient } from '@supabase/ssr'
-import { NextResponse } from 'next/server'
+import { createServerClient } from '@supabase/ssr';
+import { NextResponse } from 'next/server';
 
 export async function updateSession(request) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
+  let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -12,54 +10,53 @@ export async function updateSession(request) {
     {
       cookies: {
         getAll() {
-          return request.cookies.getAll()
+          return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
-            request,
-          })
+          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value));
+          supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
-          )
+          );
         },
       },
     }
-  )
+  );
 
-  // Do not run code between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
+  // Ambil data user dari auth
+  const { data: { user } } = await supabase.auth.getUser();
 
-  // IMPORTANT: DO NOT REMOVE auth.getUser()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/authentication/login') &&
-    !request.nextUrl.pathname.startsWith('/auth')
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
-    const url = request.nextUrl.clone()
-    url.pathname = '/authentication/login'
-    return NextResponse.redirect(url)
+  if (!user) {
+    if (!request.nextUrl.pathname.startsWith('/authentication')) {
+      return NextResponse.redirect(new URL('/authentication/login', request.url));
+    }
+    return supabaseResponse;
   }
 
-  // IMPORTANT: You *must* return the supabaseResponse object as it is.
-  // If you're creating a new response object with NextResponse.next() make sure to:
-  // 1. Pass the request in it, like so:
-  //    const myNewResponse = NextResponse.next({ request })
-  // 2. Copy over the cookies, like so:
-  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
-  // 3. Change the myNewResponse object to fit your needs, but avoid changing
-  //    the cookies!
-  // 4. Finally:
-  //    return myNewResponse
-  // If this is not done, you may be causing the browser and server to go out
-  // of sync and terminate the user's session prematurely!
+  // Ambil is_admin dari tabel custom_users
+  const { data: customUser, error } = await supabase
+    .from('custom_users')
+    .select('is_admin')
+    .eq('id', user.id)
+    .single();
 
-  return supabaseResponse
+  if (error) {
+    console.error('Error fetching custom user data:', error);
+    return NextResponse.redirect(new URL('/authentication', request.url));
+  }
+
+  const isAdmin = customUser?.is_admin === true;
+  const allowedUserPaths = ['/landing', '/skrining', '/jadwal', '/bantuan', '/pengaturan'];
+
+  // **Tambahkan pengecualian halaman login agar tidak looping**
+  if (request.nextUrl.pathname.startsWith('/authentication')) {
+    return supabaseResponse;
+  }
+
+  // **Redirect hanya jika user bukan admin & mengakses halaman terlarang**
+  if (!isAdmin && !allowedUserPaths.some(path => request.nextUrl.pathname.startsWith(path))) {
+    return NextResponse.redirect(new URL('/skrining', request.url));
+  }
+
+  return supabaseResponse;
 }

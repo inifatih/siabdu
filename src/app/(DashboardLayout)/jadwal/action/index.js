@@ -1,56 +1,92 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
 
-export const addJadwal = async (user_id, judul, deskripsi, notifikasi, tanggalJadwal) => {
-  const supabase = await createClient()
+export const addJadwal = async (user_id, title, description, tanggalJadwal) => {
+  const supabase = await createClient();
+  try {
+    const { data: jadwal, error } = await supabase
+      .from('jadwal')
+      .insert([{ 
+        user_id: user_id, 
+        judul: title, 
+        deskripsi: description, 
+        tanggalJadwal: tanggalJadwal 
+      }])
+      .select(); // Pastikan data dikembalikan
 
-  const { data: jadwal, error: errorJadwal } = await supabase
-    .from("jadwal")
-    .insert([{ 
-      user_id, judul, deskripsi, notifikasi, tanggalJadwal }]);
-  if (errorJadwal) throw errorJadwal;
-  return data;
+    if (error) {
+      console.error("Error inserting jadwal:", error);
+      return { success: false, data: [], message: error.message };
+    }
+
+    return { success: true, data: jadwal };
+  } catch (error) {
+    console.error("An error occurred while adding jadwal:", error);
+    return { success: false, data: [], message: error.message };
+  }
 };
 
 export const fetchJadwal = async (user_id) => {
-  console.log(`Fetching jadwal for user ${user_id}...`);
 
   const supabase = await createClient();
 
   const { data: jadwal, error } = await supabase
     .from("jadwal")
-    .select("id, created_at, tanggalJadwal, judul, deskripsi, notifikasi")
+    .select("id, created_at, tanggalJadwal, judul, deskripsi")
     .eq("user_id", user_id)
     .order("tanggalJadwal", { ascending: true });
 
   if (error) {
     console.error("Error fetching jadwal:", error);
-    return { success: false, data: [], message: "Gagal mendapatkan data jadwal." };
+    return { success: false, data: [], message: error.message };
   }
 
   return { success: true, data: jadwal || [], message: "Data jadwal berhasil diambil." };
 };
 
 
-export const updateJadwal = async (id, user_id, judul, updates) => {
-  const supabase = await createClient()
+export const updateJadwal = async (id, user_id, updates) => {
+  const supabase = await createClient();
+  try {
+    const { data, error } = await supabase
+      .from("jadwal")
+      .update(updates) // Menggunakan `updates` agar fleksibel
+      .eq("id", id) // Pastikan hanya update berdasarkan ID
+      .eq("user_id", user_id) // Pastikan event milik user yang sesuai
+      .select(); // Pastikan hasil update dikembalikan
 
-  const { data: jadwal, error: jadwalError } = await supabase
-    .from("jadwal")
-    .update({ judul, deskripsi, notifikasi, tanggalJadwal })
-    .eq("id", user_id)
-    .eq("id", id);
-  if (errorJadwal) throw errorJadwal;
-  return data;
+    if (error) throw error; // Tangani error jika ada
+
+    return { success: true, data }; // Kembalikan data yang diperbarui
+  } catch (error) {
+    console.error("Error updating jadwal:", error);
+    return { success: false, message: error.message };
+  }
 };
 
-export const deleteJadwal = async (jadwal_id, user_id) => {
-  const { error } = await supabase
-    .from('jadwal')
-    .delete()
-    .eq('id', jadwal_id)
-    .eq('user_id', user_id);
+// Fungsi Delete Jadwal
+export const deleteJadwal = async (id, user_id) => {
+  const supabase = await createClient();
+  try {
+    // Hapus jadwal berdasarkan id dan user_id
+    const { data, error } = await supabase
+      .from("jadwal")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user_id)
+      .select(); // Mengembalikan data yang dihapus
 
-  if (error) throw error;
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      console.error("Jadwal tidak ditemukan atau sudah dihapus.");
+      return { success: false, message: "Jadwal tidak ditemukan atau sudah terhapus." };
+    }
+
+    return { success: true, message: "Jadwal berhasil dihapus.", deletedData: data };
+  } catch (error) {
+    console.error("Error deleting jadwal:", error);
+    return { success: false, message: error.message };
+  }
 };
 
