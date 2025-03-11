@@ -2,7 +2,6 @@
 import { createClient } from "@/lib/supabase/server";
 
 export const getSkrining = async (data) => {
-  console.log("tereksekusi")
 
     const supabase = await createClient();
 
