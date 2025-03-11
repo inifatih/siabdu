@@ -6,17 +6,17 @@ import { isValid } from "date-fns";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
 
 import {
-    Textarea
+  Textarea
 } from "@/components/ui/textarea";
 
 import { Button } from "@/components/ui/Button";
@@ -134,7 +134,6 @@ export default function EditSkrining({ getSkrining }) {
     
     onError: (errors) => {
     // Handle validation errors
-      console.log("Form submission failed with errors: ", errors);
     
       // You can display a toast or alert to the user, or handle the errors in any way
       toast.error("Please fix the errors before submitting.");
@@ -210,7 +209,6 @@ export default function EditSkrining({ getSkrining }) {
     } else {
       toast.error(response.message); // Show error toast
     }
-    console.log(data)
   };
 
   return (
@@ -346,7 +344,6 @@ export default function EditSkrining({ getSkrining }) {
                               const selectedDate = new Date(value);
                               selectedDate.setHours(12, 0, 0, 0); // Set ke 12:00 siang
                               field.onChange(selectedDate);
-                              console.log(selectedDate); // Cek apakah masih berubah setelah ini
                             }
                           }}
                           initialFocus

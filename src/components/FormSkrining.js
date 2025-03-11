@@ -118,8 +118,7 @@ export default function FormSkrining({ getSkrining, fetchSkriningById, skriningI
     
     onError: (errors) => {
     // Handle validation errors
-      console.log("Form submission failed with errors: ", errors);
-    
+
       // You can display a toast or alert to the user, or handle the errors in any way
       toast.error("Please fix the errors before submitting.");
     },
@@ -371,7 +370,6 @@ export default function FormSkrining({ getSkrining, fetchSkriningById, skriningI
                               const selectedDate = new Date(value);
                               selectedDate.setHours(12, 0, 0, 0); // Set ke 12:00 siang
                               field.onChange(selectedDate);
-                              console.log(selectedDate); // Cek apakah masih berubah setelah ini
                             }
                           }}
                           initialFocus

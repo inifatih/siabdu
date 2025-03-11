@@ -24,9 +24,6 @@ export default function LoginPage() {
     defaultValues: {
       email: "",
       password: ""
-    },
-    onError: (errors) => {
-      console.log("Login submission failed with errors:", errors);
     }
   });
 
@@ -43,7 +40,6 @@ export default function LoginPage() {
     } else {
       toast.error(response.message); // Show error toast
     }
-    console.log(data)
   };
 
   return (
