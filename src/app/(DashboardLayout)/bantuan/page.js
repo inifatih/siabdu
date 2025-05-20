@@ -17,7 +17,7 @@ export default function Bantuan() {
                     <AccordionTrigger>Cara Melakukan Skrining Anak Berkebutuhan Khusus</AccordionTrigger>
                     <AccordionContent>
                         <div>
-                            <Image alt="cara melakukan skrining anak berkebutuan khusus" src="/bantuan_kebutuhankhusus.png" width="500" height="300"/>
+                            <Image alt="cara melakukan skrining anak berkebutuan khusus" src="/bantuan_kebutuhanKhusus.png" width="500" height="300"/>
                         </div>
                     1. Masuk ke menu Kebutuhan Khusus. <br/>
                     2. Klik pilih hambatan pada anak yang ingin diskrining. <br/>
