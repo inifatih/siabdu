@@ -3,7 +3,8 @@ import {
     AccordionContent,
     AccordionItem,
     AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/ui/accordion";
+import Image from "next/image";
   
 
 
@@ -16,75 +17,67 @@ export default function Bantuan() {
                     <AccordionTrigger>Cara Melakukan Skrining Anak Berkebutuhan Khusus</AccordionTrigger>
                     <AccordionContent>
                         <div>
-                            satu
+                            <Image alt="cara melakukan skrining anak berkebutuan khusus" src="/bantuan_kebutuhankhusus.png" width="500" height="300"/>
                         </div>
-                    Penjelasan cara melakukannya.
+                    1. Masuk ke menu Kebutuhan Khusus. <br/>
+                    2. Klik pilih hambatan pada anak yang ingin diskrining. <br/>
+                    3. Klik hambatan yang ingin dilakukan. <br/>
+                    4. Isi formulir berbentuk pertanyaan, lalu simpan. <br/>
                     </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-2">
                     <AccordionTrigger>Cara Melakukan Skrining Tumbuh Kembang</AccordionTrigger>
                     <AccordionContent>
-                    Yes. It adheres to the WAI-ARIA design pattern.
-                    </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-3">
-                    <AccordionTrigger>Cara Melihat Kalender</AccordionTrigger>
-                    <AccordionContent>
-                    Yes. It adheres to the WAI-ARIA design pattern.
+                    <div>
+                        <Image alt="cara melakukan skrining" src="/bantuan_skrining.png" width="500" height="300"/>
+                    </div>
+                    1. Masuk ke menu Skrining Anak. <br/>
+                    2. Isi formulir identitas anak. <br/>
+                    3. Isi formulir kondisi kesehatan telinga. <br/>
+                    4. Isi formulir tumbuh kembang. <br/>
+                    5. Simpan, maka sistem akan menghitung hasil skrining dan menyimpannya. <br/>
                     </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-4">
                     <AccordionTrigger>Cara Membuat Agenda di Jadwal</AccordionTrigger>
                     <AccordionContent>
-                    Yes. It adheres to the WAI-ARIA design pattern.
-                    </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-5">
-                    <AccordionTrigger>Cara Memperbarui Agenda di Jadwal</AccordionTrigger>
-                    <AccordionContent>
-                    Yes. It adheres to the WAI-ARIA design pattern.
+                    Test
                     </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-6">
                     <AccordionTrigger>Cara Menghapus Agenda</AccordionTrigger>
                     <AccordionContent>
-                    Yes. It adheres to the WAI-ARIA design pattern.
+                    Test
                     </AccordionContent>
                 </AccordionItem>
-                <AccordionItem value="item-7">
-                    <AccordionTrigger>Cara Mencari Dokumen melalui Nama Pasien</AccordionTrigger>
+                <AccordionItem value="item-5">
+                    <AccordionTrigger>Cara Mengubah Agenda di Jadwal</AccordionTrigger>
                     <AccordionContent>
-                    Yes. It adheres to the WAI-ARIA design pattern.
-                    </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-8">
-                    <AccordionTrigger>Cara Menyaring (Filter) Dokumen Pasien</AccordionTrigger>
-                    <AccordionContent>
-                    Yes. It adheres to the WAI-ARIA design pattern.
+                    Test
                     </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-9">
                     <AccordionTrigger>Cara Melihat Laporan Dokumen Pasien</AccordionTrigger>
                     <AccordionContent>
-                    Yes. It adheres to the WAI-ARIA design pattern.
+                    Test
+                    </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-9">
+                    <AccordionTrigger>Cara Menghapus Dokumen Pasien</AccordionTrigger>
+                    <AccordionContent>
+                    Test
+                    </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-9">
+                    <AccordionTrigger>Cara Mengubah Dokumen Pasien</AccordionTrigger>
+                    <AccordionContent>
+                    Test
                     </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-10">
-                    <AccordionTrigger>Cara Keluar Akun</AccordionTrigger>
+                    <AccordionTrigger>Cara Keluar dari Akun</AccordionTrigger>
                     <AccordionContent>
-                    Yes. It adheres to the WAI-ARIA design pattern.
-                    </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-11">
-                    <AccordionTrigger>(Admin) Cara Mendaftarkan Akun Baru</AccordionTrigger>
-                    <AccordionContent>
-                    Yes. It adheres to the WAI-ARIA design pattern.
-                    </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-12">
-                    <AccordionTrigger>(Admin) Cara Menghapus Dokumen Pasien</AccordionTrigger>
-                    <AccordionContent>
-                    Yes. It adheres to the WAI-ARIA design pattern.
+                    Test
                     </AccordionContent>
                 </AccordionItem>
             </Accordion>
