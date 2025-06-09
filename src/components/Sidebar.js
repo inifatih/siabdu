@@ -47,8 +47,8 @@ export default function Sidebar({ children }) {
             className={`overflow-hidden transition-all ${
               expanded ? "w-32" : "w-0"
             }`}
-            width={240} // Tentukan width
-            height={240} // Tentukan height
+            width="240" // Tentukan width
+            height="240" // Tentukan height
             alt="Logo SI ABDU"
           />
           <button

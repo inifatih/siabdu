@@ -11,7 +11,6 @@ export async function getUser({email, password}) {
 
   // Autentikasi menggunakan Supabase Auth
   const { data, error: error } = await supabase.auth.signInWithPassword({ email, password });
-  console.log("user:", data)
   if (error) {
     return { success: false, error: "Password salah atau akun tidak valid" };
   }
