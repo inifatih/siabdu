@@ -46,7 +46,7 @@ export async function updateSession(request) {
   }
 
   const isAdmin = customUser?.is_admin === true;
-  const allowedUserPaths = ['/landing', '/skrining', '/jadwal', '/bantuan', '/pengaturan'];
+  const allowedUserPaths = ['/landing', '/skrining', '/kebutuhanKhusus', '/jadwal', '/bantuan', '/pengaturan'];
 
   // **Tambahkan pengecualian halaman login agar tidak looping**
   if (request.nextUrl.pathname.startsWith('/authentication')) {

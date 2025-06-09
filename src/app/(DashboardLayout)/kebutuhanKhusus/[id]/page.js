@@ -69,7 +69,7 @@ export default function PilihHambatan() {
         )}
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 sm:grid-cols-1 gap-4">
           {hambatanList.map((hambatan) => (
             <Button
               key={hambatan.path}
