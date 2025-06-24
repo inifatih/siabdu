@@ -61,7 +61,6 @@ export default function LoginPage() {
 
       <Card className="w-full max-w-md p-6 m-2">
         <CardContent>
-          <h2 className="text-2xl font-semibold text-center mb-4">Login</h2>
 
           {/* Barisan logo */}
           <div className="flex p-2 items-center justify-center">
@@ -80,6 +79,10 @@ export default function LoginPage() {
               alt="Logo Kabupaten Sidoarjo"
             />
           </div>
+
+          <h2 className="text-2xl font-semibold text-center mb-1">Selamat Datang di Si-Tia Dansa</h2>
+          <p className="text-m font-semibold text-center mb-4">Sistem Identifikasi Anak Penyandang Disabilitas</p>
+
           <FormProvider {...methods}>
             <form onSubmit={methods.handleSubmit(onSubmit)}>
               <div className="py-2">
