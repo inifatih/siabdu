@@ -9,8 +9,8 @@ import "../globals.css";
 
 
 export const metadata = {
-  title: "SI ABDU",
-  description: "Aplikasi Skrining Anak Berkebutuhan Khusus",
+  title: "Si-Tia Dansa",
+  description: "Sistem Identifikasi Anak Penyandang Disabilitas",
 };
 
 export default async function RootLayout({ children }) {

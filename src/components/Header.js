@@ -90,7 +90,7 @@ export default function Header() {
   useEffect(() => {
     const paths = pathname.split("/").filter(Boolean);
 
-    let currentPage = paths.length ? formatPageName(paths[paths.length - 1]) : "Dashboard";
+    let currentPage = paths.length ? formatPageName(paths[paths.length - 1]) : "Si Tia Dansa - Sistem Identifikasi Anak Penyandang Disabilitas";
 
     // Jika halaman memiliki ID (misal: `/kebutuhanKhusus/123`), sembunyikan teks header
     if (paths.length > 1 && !isNaN(Number(paths[1]))) {
